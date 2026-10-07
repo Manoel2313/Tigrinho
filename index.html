@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐯 Simulador Educativo - Tigrinho</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+  }
+
+  body {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    color: #fff;
+  }
+
+  .container {
+    background: linear-gradient(145deg, #2a2a4e, #1a1a3e);
+    border: 3px solid #ffcc00;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 0 40px rgba(255, 204, 0, 0.4), 
+                inset 0 0 30px rgba(0, 0, 0, 0.5);
+  }
+
+  h1 {
+    text-align: center;
+    color: #ffcc00;
+    font-size: 1.8em;
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px #ffcc00, 0 0 20px #ff9900;
+    animation: brilho 2s infinite alternate;
+  }
+
+  @keyframes brilho {
+    from { text-shadow: 0 0 10px #ffcc00, 0 0 20px #ff9900; }
+    to { text-shadow: 0 0 20px #ffcc00, 0 0 40px #ff9900, 0 0 60px #ff6600; }
+  }
+
+  .aviso {
+    text-align: center;
+    font-size: 0.75em;
+    color: #ff6b6b;
+    margin-bottom: 20px;
+    padding: 8px;
+    background: rgba(255, 107, 107, 0.1);
+    border-radius: 8px;
+    border: 1px solid #ff6b6b;
+  }
+
+  .saldo-box {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+    border: 2px solid #00ff88;
+  }
+
+  .saldo-label {
+    font-size: 0.85em;
+    color: #aaa;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .saldo-valor {
+    font-size: 2em;
+    font-weight: bold;
+    color: #00ff88;
+    text-shadow: 0 0 15px #00ff88;
+  }
+
+  .slots {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 25px 0;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 15px;
+    border: 2px solid #ffcc00;
+    box-shadow: inset 0 0 20px rgba(255, 204, 0, 0.2);
+  }
+
+  .slot {
+    width: 90px;
+    height: 90px;
+    background: linear-gradient(145deg, #fff, #ddd);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3em;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5), inset 0 -4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.1s;
+  }
+
+  .slot.girando {
+    animation: girar 0.1s infinite;
+  }
+
+  @keyframes girar {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0); }
+  }
+
+  .slot.ganhou {
+    box-shadow: 0 0 20px #00ff88, 0 0 40px #00ff88;
+    transform: scale(1.1);
+  }
+
+  .mensagem {
+    text-align: center;
+    font-size: 1.1em;
+    min-height: 30px;
+    margin: 15px 0;
+    font-weight: bold;
+  }
+
+  .mensagem.ganhou { color: #00ff88; text-shadow: 0 0 10px #00ff88; }
+  .mensagem.perdeu { color: #ff6b6b; }
+  .mensagem.quase { color: #ffcc00; }
+
+  .controles {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .aposta-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: 1px solid #ffcc00;
+  }
+
+  .aposta-box label {
+    color: #ffcc00;
+    font-weight: bold;
+  }
+
+  .aposta-box input {
+    width: 100px;
+    padding: 8px;
+    border-radius: 8px;
+    border: 2px solid #ffcc00;
+    background: #1a1a2e;
+    color: #fff;
+    font-size: 1em;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  button {
+    padding: 15px;
+    font-size: 1.1em;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .btn-girar {
+    background: linear-gradient(145deg, #ffcc00, #ff9900);
+    color: #1a1a2e;
+    box-shadow: 0 4px 0 #b36b00, 0 6px 15px rgba(255, 153, 0, 0.4);
+  }
+
+  .btn-girar:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #b36b00, 0 8px 20px rgba(255, 153, 0, 0.6);
+  }
+
+  .btn-girar:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #b36b00;
+  }
+
+  .btn-girar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-reiniciar {
+    background: linear-gradient(145deg, #3a3a5e, #2a2a4e);
+    color: #ffcc00;
+    border: 2px solid #ffcc00;
+  }
+
+  .btn-reiniciar:hover {
+    background: linear-gradient(145deg, #4a4a7e, #3a3a5e);
+  }
+
+  .estatisticas {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 12px;
+    border: 1px solid #444;
+    font-size: 0.85em;
+  }
+
+  .estatisticas h3 {
+    color: #ffcc00;
+    margin-bottom: 10px;
+    text-align: center;
+    font-size: 1em;
+  }
+
+  .stat-linha {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    color: #ccc;
+    border-bottom: 1px dashed #333;
+  }
+
+  .stat-linha span:last-child {
+    color: #fff;
+    font-weight: bold;
+  }
+
+  .prejuizo { color: #ff6b6b !important; }
+  .lucro { color: #00ff88 !important; }
+
+  .tabela-premios {
+    margin-top: 15px;
+    padding: 12px;
+    background: rgba(255, 204, 0, 0.05);
+    border-radius: 10px;
+    border: 1px solid #ffcc00;
+    font-size: 0.8em;
+  }
+
+  .tabela-premios h3 {
+    color: #ffcc00;
+    margin-bottom: 8px;
+    text-align: center;
+    font-size: 1em;
+  }
+
+  .premio-linha {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    color: #ddd;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🐯 TIGRINHO 🐯</h1>
+  <div class="aviso">
+    ⚠️ SIMULAÇÃO EDUCATIVA — Nenhum dinheiro real é usado
+  </div>
+
+  <div class="saldo-box">
+    <div class="saldo-label">Saldo Fictício</div>
+    <div class="saldo-valor" id="saldo">R$ 100,00</div>
+  </div>
+
+  <div class="slots">
+    <div class="slot" id="slot1">🐯</div>
+    <div class="slot" id="slot2">🐯</div>
+    <div class="slot" id="slot3">🐯</div>
+  </div>
+
+  <div class="mensagem" id="mensagem">Clique em GIRAR para começar!</div>
+
+  <div class="controles">
+    <div class="aposta-box">
+      <label for="aposta">Valor da rodada:</label>
+      <input type="number" id="aposta" value="1" min="1" step="1">
+    </div>
+    <button class="btn-girar" id="btnGirar">🎰 GIRAR</button>
+    <button class="btn-reiniciar" id="btnReiniciar">🔄 Reiniciar</button>
+  </div>
+
+  <div class="estatisticas">
+    <h3>📊 Estatísticas</h3>
+    <div class="stat-linha"><span>Rodadas jogadas:</span><span id="statRodadas">0</span></div>
+    <div class="stat-linha"><span>Total apostado:</span><span id="statApostado">R$ 0,00</span></div>
+    <div class="stat-linha"><span>Total ganho:</span><span id="statGanho">R$ 0,00</span></div>
+    <div class="stat-linha"><span>Resultado:</span><span id="statResultado">R$ 0,00</span></div>
+    <div class="stat-linha"><span>RTP observado:</span><span id="statRTP">0%</span></div>
+  </div>
+
+  <div class="tabela-premios">
+    <h3>💰 Tabela de Prêmios</h3>
+    <div class="premio-linha"><span>🐯🐯🐯</span><span>R$ 5,00</span></div>
+    <div class="premio-linha"><span>💰💰💰</span><span>R$ 3,00</span></div>
+    <div class="premio-linha"><span>🍒🍒🍒</span><span>R$ 2,00</span></div>
+    <div class="premio-linha"><span>🔔🔔🔔</span><span>R$ 1,50</span></div>
+    <div class="premio-linha"><span>⭐⭐⭐</span><span>R$ 1,20</span></div>
+    <div class="premio-linha"><span>🐯🐯 (dois tigres)</span><span>R$ 0,50</span></div>
+  </div>
+</div>
+
+<script>
+  // ==============================
+  // CONFIGURAÇÃO DO JOGO
+  // ==============================
+  const SIMBOLOS = ["🐯", "💰", "🍒", "🔔", "⭐"];
+  const SALDO_INICIAL = 100;
+
+  const PREMIOS = {
+    "🐯🐯🐯": 5.00,
+    "💰💰💰": 3.00,
+    "🍒🍒🍒": 2.00,
+    "🔔🔔🔔": 1.50,
+    "⭐⭐⭐": 1.20,
+  };
+
+  // ==============================
+  // ESTADO DO JOGO
+  // ==============================
+  let saldo = SALDO_INICIAL;
+  let rodadas = 0;
+  let totalApostado = 0;
+  let totalGanho = 0;
+  let girando = false;
+
+  // ==============================
+  // ELEMENTOS DOM
+  // ==============================
+  const elSaldo = document.getElementById("saldo");
+  const elMensagem = document.getElementById("mensagem");
+  const elSlot1 = document.getElementById("slot1");
+  const elSlot2 = document.getElementById("slot2");
+  const elSlot3 = document.getElementById("slot3");
+  const elAposta = document.getElementById("aposta");
+  const elBtnGirar = document.getElementById("btnGirar");
+  const elBtnReiniciar = document.getElementById("btnReiniciar");
+  const elStatRodadas = document.getElementById("statRodadas");
+  const elStatApostado = document.getElementById("statApostado");
+  const elStatGanho = document.getElementById("statGanho");
+  const elStatResultado = document.getElementById("statResultado");
+  const elStatRTP = document.getElementById("statRTP");
+
+  // ==============================
+  // UTILITÁRIOS
+  // ==============================
+  function formatarMoeda(valor) {
+    return "R$ " + valor.toFixed(2).replace(".", ",");
+  }
+
+  function atualizarSaldo() {
+    elSaldo.textContent = formatarMoeda(saldo);
+  }
+
+  function atualizarEstatisticas() {
+    elStatRodadas.textContent = rodadas;
+    elStatApostado.textContent = formatarMoeda(totalApostado);
+    elStatGanho.textContent = formatarMoeda(totalGanho);
+    
+    const resultado = totalGanho - totalApostado;
+    elStatResultado.textContent = formatarMoeda(resultado);
+    elStatResultado.className = resultado >= 0 ? "lucro" : "prejuizo";
+    
+    const rtp = totalApostado > 0 ? (totalGanho / totalApostado * 100).toFixed(1) : "0.0";
+    elStatRTP.textContent = rtp + "%";
+  }
+
+  function setMensagem(texto, tipo) {
+    elMensagem.textContent = texto;
+    elMensagem.className = "mensagem";
+    if (tipo) elMensagem.classList.add(tipo);
+  }
+
+  function limparDestaques() {
+    [elSlot1, elSlot2, elSlot3].forEach(s => s.classList.remove("ganhou", "girando"));
+  }
+
+  // ==============================
+  // LÓGICA PRINCIPAL
+  // ==============================
+  function verificarPremio(resultado) {
+    const chave = resultado.join("");
+    if (PREMIOS[chave]) return PREMIOS[chave];
+
+    // Caso especial: dois tigres
+    const tigres = resultado.filter(s => s === "🐯").length;
+    if (tigres === 2) return 0.50;
+
+    return 0;
+  }
+
+  function girarSlots() {
+    return [
+      SIMBOLOS[Math.floor(Math.random() * SIMBOLOS.length)],
+      SIMBOLOS[Math.floor(Math.random() * SIMBOLOS.length)],
+      SIMBOLOS[Math.floor(Math.random() * SIMBOLOS.length)]
+    ];
+  }
+
+  function animarGirada(resultadoFinal, callback) {
+    let ticks = 0;
+    const maxTicks = 15;
+    const intervalos = [50, 60, 70, 80, 90, 100, 120, 150, 180, 220, 260, 300, 350, 400, 450];
+    
+    function tick() {
+      elSlot1.textContent = SIMBOLOS[Math.floor(Math.random() * SIMBOLOS.length)];
+      elSlot2.textContent = SIMBOLOS[Math.floor(Math.random() * SIMBOLOS.length)];
+      elSlot3.textContent = SIMBOLOS[Math.floor(Math.random() * SIMBOLOS.length)];
+      
+      ticks++;
+      if (ticks < maxTicks) {
+        setTimeout(tick, intervalos[ticks] || 100);
+      } else {
+        elSlot1.textContent = resultadoFinal[0];
+        elSlot2.textContent = resultadoFinal[1];
+        elSlot3.textContent = resultadoFinal[2];
+        callback();
+      }
+    }
+    tick();
+  }
+
+  function jogar() {
+    if (girando) return;
+
+    const valorAposta = parseFloat(elAposta.value);
+
+    // Validações
+    if (isNaN(valorAposta) || valorAposta <= 0) {
+      setMensagem("⚠️ Digite um valor de aposta válido!", "perdeu");
+      return;
+    }
+
+    if (valorAposta > saldo) {
+      setMensagem("❌ Saldo insuficiente! Reinicie o jogo.", "perdeu");
+      return;
+    }
+
+    girando = true;
+    elBtnGirar.disabled = true;
+    limparDestaques();
+    setMensagem("🎰 Girando...", "");
+
+    // Debita aposta
+    saldo -= valorAposta;
+    totalApostado += valorAposta;
+    rodadas++;
+    atualizarSaldo();
+    atualizarEstatisticas();
+
+    // Gera resultado
+    const resultado = girarSlots();
+
+    // Animação
+    animarGirada(resultado, () => {
+      const premio = verificarPremio(resultado);
+
+      if (premio > 0) {
+        saldo += premio;
+        totalGanho += premio;
+        
+        // Destaque visual
+        [elSlot1, elSlot2, elSlot3].forEach(s => s.classList.add("ganhou"));
+
+        if (premio >= 1.20) {
+          setMensagem(`🎉 JACKPOT! Você ganhou ${formatarMoeda(premio)}!`, "ganhou");
+        } else if (premio === 0.50) {
+          setMensagem(`😮 Quase! Dois tigres! +${formatarMoeda(premio)}`, "quase");
+        } else {
+          setMensagem(`✨ Você ganhou ${formatarMoeda(premio)}!`, "ganhou");
+        }
+      } else {
+        // Verifica quase-acerto (2 iguais)
+        const temDoisIguais = 
+          resultado[0] === resultado[1] || 
+          resultado[1] === resultado[2] || 
+          resultado[0] === resultado[2];
+
+        if (temDoisIguais) {
+          setMensagem("😬 Quase! Faltou só um...", "quase");
+        } else {
+          setMensagem("❌ Não foi dessa vez...", "perdeu");
+        }
+      }
+
+      atualizarSaldo();
+      atualizarEstatisticas();
+
+      girando = false;
+      elBtnGirar.disabled = false;
+
+      // Verifica fim de jogo
+      if (saldo < parseFloat(elAposta.value)) {
+        setTimeout(() => {
+          setMensagem("💀 FIM DE JOGO! Seu saldo acabou. A casa sempre vence.", "perdeu");
+          elBtnGirar.disabled = true;
+        }, 800);
+      }
+    });
+  }
+
+  function reiniciar() {
+    if (girando) return;
+    
+    saldo = SALDO_INICIAL;
+    rodadas = 0;
+    totalApostado = 0;
+    totalGanho = 0;
+    
+    limparDestaques();
+    elSlot1.textContent = "🐯";
+    elSlot2.textContent = "🐯";
+    elSlot3.textContent = "🐯";
+    elAposta.value = 1;
+    elBtnGirar.disabled = false;
+    
+    setMensagem("Clique em GIRAR para começar!", "");
+    atualizarSaldo();
+    atualizarEstatisticas();
+  }
+
+  // ==============================
+  // EVENTOS
+  // ==============================
+  elBtnGirar.addEventListener("click", jogar);
+  elBtnReiniciar.addEventListener("click", reiniciar);
+
+  // Permite girar com Enter
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !elBtnGirar.disabled) jogar();
+  });
+
+  // Inicializa
+  atualizarSaldo();
+  atualizarEstatisticas();
+</script>
+</body>
+</html>
